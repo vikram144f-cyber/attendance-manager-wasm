@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Attendance Manager | Cyber-Ver</title>
+    <meta name="description" content="A crash-proof Student Attendance Manager compiled from C to WebAssembly.">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #020005;
+            --neon-primary: #0ff;
+            --neon-secondary: #f0f;
+            --neon-alert: #ff0055;
+            --neon-success: #0f0;
+            --panel-glass: rgba(10, 5, 20, 0.75);
+            --border-glow: rgba(0, 255, 255, 0.15);
+            --font-display: 'Orbitron', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #e0e0e0;
+            font-family: var(--font-display);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            perspective: 1200px;
+        }
+
+        /* Animated Cyber-Grid Background */
+        .cyber-grid {
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transform: perspective(500px) rotateX(60deg) translateY(-100px) translateZ(-200px);
+            /* animation: gridMove 15s linear infinite; */
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0) translateZ(-200px); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px) translateZ(-200px); }
+        }
+
+        #app-container {
+            width: 90vw;
+            max-width: 1000px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--panel-glass);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            border: 1px solid var(--border-glow);
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.1), inset 0 0 20px rgba(255, 0, 255, 0.05);
+            position: relative;
+            z-index: 10;
+            transform-style: preserve-3d;
+            /* animation: floatUI 6s ease-in-out infinite; */
+            overflow: hidden;
+        }
+
+        @keyframes floatUI {
+            0%, 100% { transform: translateY(0) rotateX(2deg); }
+            50% { transform: translateY(-10px) rotateX(-1deg); }
+        }
+
+        /* Glitchy top accent */
+        #app-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--neon-primary), var(--neon-secondary), var(--neon-primary));
+            background-size: 200% auto;
+            /* animation: shimmer 3s linear infinite; */
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 200% 50%; }
+        }
+
+        #app-header {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-glow);
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-primary), 0 0 20px var(--neon-primary);
+        }
+
+        .subtitle {
+            display: block;
+            font-size: 11px;
+            color: var(--neon-secondary);
+            font-weight: 500;
+            letter-spacing: 3px;
+            margin-top: 4px;
+            text-shadow: 0 0 8px var(--neon-secondary);
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(0, 255, 0, 0.05);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--neon-success);
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px var(--neon-success);
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--neon-success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-success);
+            animation: blink 1.5s infinite alternate;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; box-shadow: 0 0 15px var(--neon-success); }
+            to { opacity: 0.3; box-shadow: 0 0 2px var(--neon-success); }
+        }
+
+        #terminal-wrapper {
+            flex: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .terminal-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0, 5, 10, 0.8);
+            border: 1px solid var(--border-glow);
+            border-radius: 6px;
+            padding: 20px;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        /* CRT Scanline Effect */
+        .terminal-container::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        .terminal-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 10%;
+            background: rgba(0, 255, 255, 0.05);
+            /* animation: scan 8s linear infinite; */
+            z-index: 51;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        @keyframes scan {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        #output {
+            flex: 1;
+            width: 100%;
+            background: transparent;
+            color: #d8f8e1;
+            font-family: var(--font-mono);
+            font-size: 15px;
+            line-height: 1.6;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 0 2px rgba(216, 248, 225, 0.5);
+        }
+
+        #output::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #output::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+        }
+
+        #output::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 255, 0.4);
+            border-radius: 3px;
+        }
+
+        #input-area {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(0, 255, 255, 0.2);
+            position: relative;
+            z-index: 10;
+        }
+
+        .prompt-arrow {
+            color: var(--neon-secondary);
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 16px;
+            margin-right: 12px;
+            text-shadow: 0 0 8px var(--neon-secondary);
+        }
+
+        #input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #fff;
+            font-family: var(--font-mono);
+            font-size: 16px;
+            caret-color: var(--neon-primary);
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+        }
+
+        #input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+            font-style: italic;
+        }
+
+        #app-footer {
+            padding: 15px 30px;
+            text-align: center;
+            border-top: 1px solid var(--border-glow);
+            background: rgba(0, 0, 0, 0.5);
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        #app-footer span {
+            transition: all 0.3s;
+        }
+
+        #app-footer span:hover {
+            color: var(--neon-primary);
+            text-shadow: 0 0 8px var(--neon-primary);
+        }
+
+        .sr-only {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="cyber-grid"></div>
+    <div id="app-container">
+        <header id="app-header">
+            <div>
+                <h1>Attendance Manager</h1>
+                <span class="subtitle">WASM NEURAL IMPLANT v1.0</span>
+            </div>
+            <div class="status-badge">
+                <div class="status-dot"></div>
+                ONLINE
+            </div>
+        </header>
+        <main id="terminal-wrapper">
+            <div class="terminal-container">
+                <textarea aria-label="Terminal output" id="output" readonly></textarea>
+                <div id="input-area">
+                    <span class="prompt-arrow">sys admin >_</span>
+                    <input aria-label="Enter command" autocomplete="off" autofocus id="input" spellcheck="false" placeholder="Awaiting secure input...">
+                </div>
+            </div>
+        </main>
+        <footer id="app-footer">
+            <span>Powered by WebAssembly • Emscripten • IDBFS Node</span>
+        </footer>
+    </div>
+    
+    <script>
+        var Module = {
+            inputResolve: null,
+            preRun: [],
+            postRun: [],
+            print: function(text) {
+                var output = document.getElementById("output");
+                if (output) {
+                    output.value += text + "\n";
+                    output.scrollTop = output.scrollHeight;
+                }
+            },
+            printErr: function(text) {
+                var output = document.getElementById("output");
+                if (output) {
+                    output.value += "[ERR] " + text + "\n";
+                    output.scrollTop = output.scrollHeight;
+                    console.warn("WASM STDERR:", text);
+                }
+            },
+            canvas: null,
+            locateFile: function(path) {
+                return path;
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var input = document.getElementById("input");
+            var output = document.getElementById("output");
+            
+            if (input && output) {
+                input.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
+                        var val = input.value;
+                        output.value += "sys admin >_ " + val + "\n";
+                        output.scrollTop = output.scrollHeight;
+                        input.value = "";
+                        
+                        if (Module.inputResolve) {
+                            var resolveFunc = Module.inputResolve;
+                            Module.inputResolve = null;
+                            resolveFunc(val);
+                        }
+                    }
+                });
+                
+                // Focus input when clicking anywhere in wrapper
+                document.getElementById('terminal-wrapper').addEventListener('click', function() {
+                    input.focus();
+                });
+            }
+        });
+    </script>
+    <script async src="index.js"></script>
+</body>
+</html>
