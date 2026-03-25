@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Attendance Manager</title>
+    <meta name="description" content="A crash-proof Student Attendance Manager compiled from C to WebAssembly. Manage student records, track attendance, and generate shortage reports — all in your browser.">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #050505;
+            --bg-panel: #0a0a0c;
+            --bg-terminal: #000000;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-glow: rgba(0, 238, 255, 0.4);
+            --accent-color: #00eeff;
+            --success-color: #00ff66;
+            --panel-border: rgba(255, 255, 255, 0.1);
+            --terminal-border: rgba(0, 238, 255, 0.2);
+            --font-ui: 'Inter', sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            background-image: radial-gradient(circle at 50% 0%, #111823, var(--bg-page) 70%);
+            color: var(--text-main);
+            font-family: var(--font-ui);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #app-container {
+            width: 90vw;
+            max-width: 1100px;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-panel);
+            border-radius: 16px;
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 
+                        0 0 20px rgba(0, 238, 255, 0.05);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #app-container::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-color), transparent);
+            opacity: 0.5;
+        }
+
+        #app-header {
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .header-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        h1 {
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: var(--accent-color);
+            font-weight: 400;
+            text-shadow: 0 0 8px var(--accent-glow);
+            letter-spacing: 0.5px;
+        }
+
+        .status-bar {
+            background: rgba(0, 255, 102, 0.1);
+            border: 1px solid rgba(0, 255, 102, 0.3);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--success-color);
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.4);
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.1);
+        }
+
+        .status-ready::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--success-color);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        #terminal-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 32px;
+            background: var(--bg-terminal);
+            position: relative;
+        }
+
+        #terminal-area::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0.3;
+        }
+
+        .terminal-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--terminal-border);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            box-shadow: inset 0 0 20px rgba(0, 238, 255, 0.05);
+            padding: 16px;
+            position: relative;
+            z-index: 20;
+        }
+
+        #output {
+            flex: 1;
+            width: 100%;
+            background: transparent;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            line-height: 1.6;
+            border: none;
+            outline: none;
+            resize: none;
+            overflow-y: auto;
+        }
+
+        #output::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #output::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 4px;
+        }
+
+        #output::-webkit-scrollbar-thumb {
+            background: rgba(0, 238, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        #output::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 238, 255, 0.5);
+        }
+
+        #input-area {
+            display: flex;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px dashed var(--terminal-border);
+        }
+
+        .prompt {
+            color: var(--accent-color);
+            font-family: var(--font-mono);
+            font-weight: 600;
+            margin-right: 12px;
+            font-size: 15px;
+            text-shadow: 0 0 5px var(--accent-glow);
+        }
+
+        #input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-family: var(--font-mono);
+            font-size: 15px;
+            caret-color: var(--accent-color);
+        }
+
+        #input::placeholder {
+            color: rgba(156, 163, 175, 0.3);
+            font-style: italic;
+        }
+
+        #app-footer {
+            padding: 16px 32px;
+            text-align: right;
+            border-top: 1px solid var(--panel-border);
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        #app-footer span {
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            opacity: 0.7;
+            transition: all 0.3s;
+        }
+
+        #app-footer span:hover {
+            opacity: 1;
+            color: var(--text-main);
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="app-container">
+        <header id="app-header">
+            <div class="header-titles">
+                <h1>Attendance Manager</h1>
+                <span class="subtitle">WebAssembly-based C project</span>
+            </div>
+            <div class="status-bar">
+                <span class="status-ready" id="status-indicator">SYSTEM READY</span>
+            </div>
+        </header>
+        <main id="terminal-area">
+            <div class="terminal-container">
+                <textarea aria-label="Terminal output" id="output" readonly></textarea>
+                <div id="input-area">
+                    <label class="sr-only" for="input">Command Input</label>
+                    <span class="prompt">></span>
+                    <input aria-label="Enter command" autocomplete="off" autofocus id="input" spellcheck="false">
+                </div>
+            </div>
+        </main>
+        <footer id="app-footer">
+            <span>POWERED BY WEBASSEMBLY • EMSCRIPTEN • IDBFS</span>
+        </footer>
+    </div>
+    <script>
+        var Module = {
+            inputResolve: null,
+            preRun: [],
+            postRun: [],
+            print: function(text) {
+                var output = document.getElementById("output");
+                if (output) {
+                    output.value += text + "\n";
+                    output.scrollTop = output.scrollHeight;
+                }
+            },
+            printErr: function(text) {
+                var output = document.getElementById("output");
+                if (output) {
+                    output.value += "[ERR] " + text + "\n";
+                    output.scrollTop = output.scrollHeight;
+                    console.warn("WASM STDERR:", text);
+                }
+            },
+            canvas: null,
+            locateFile: function(path) {
+                return path;
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var input = document.getElementById("input"),
+                output = document.getElementById("output");
+            
+            if (input && output) {
+                input.addEventListener("keydown", function(event) {
+                    if (event.key === "Enter") {
+                        var val = input.value;
+                        output.value += "> " + val + "\n";
+                        output.scrollTop = output.scrollHeight;
+                        input.value = "";
+                        
+                        if (Module.inputResolve) {
+                            var resolveFunc = Module.inputResolve;
+                            Module.inputResolve = null;
+                            resolveFunc(val);
+                        }
+                    }
+                });
+                
+                // Focus input when clicking anywhere in terminal area
+                document.getElementById('terminal-area').addEventListener('click', function() {
+                    input.focus();
+                });
+            }
+        });
+    </script>
+    <script async src="index.js"></script>
+</body>
+</html>

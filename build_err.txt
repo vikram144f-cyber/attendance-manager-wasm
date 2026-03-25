@@ -1,0 +1,17 @@
+
+C:\Users\user\Desktop\DA1-BMAD>set PATH=C:\Users\user\emsdk;C:\Users\user\emsdk\upstream\emscripten;C:\Users\user\AppData\Local\Programs\Python\Python313\scripts\;C:\Users\user\AppData\Local\Programs\Python\Python313\;C:\Program Files\Common Files\Oracle\Java\javapath;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\dotnet\;C:\Program Files\nodejs\;C:\Program Files (x86)\Windows Kits\8.1\Windows Performance Toolkit\;C:\Program Files\Git\cmd;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Users\user\.local\bin;C:\Users\user\AppData\Local\Programs\Python\Python313\Scripts\;C:\Users\user\AppData\Local\Programs\Python\Launcher\;C:\Users\user\AppData\Local\Microsoft\WindowsApps;C:\Users\user\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\user\AppData\Roaming\npm;C:\Users\user\AppData\Local\Python\bin;C:\Users\user\AppData\Local\Programs\Antigravity\bin;C:\Users\user\emsdk;C:\Users\user\emsdk\upstream\emscripten;C:\Users\user\emsdk\node\16.20.0_64bit\bin 
+
+C:\Users\user\Desktop\DA1-BMAD>cd c:\Users\user\Desktop\DA1-BMAD 
+
+c:\Users\user\Desktop\DA1-BMAD>emcc -std=c11 -O2 -Wall -Wextra -s ASYNCIFY=1 -s FORCE_FILESYSTEM=1 -s EXIT_RUNTIME=0 -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_RUNTIME_METHODS="['stringToUTF8']" -lidbfs.js --shell-file www/shell.html src\main.c src\student_manager.c src\attendance_logic.c src\analytics_engine.c src\input_validator.c src\storage_bridge.c -o index.html 
+src\main.c:114:69: error: too many arguments to function call, expected 2, have 3
+  114 |     if (input_read_line("Step 2/2: Enter their full Name > ", name, MAX_NAME_LEN) != 0) {
+      |         ~~~~~~~~~~~~~~~                                             ^~~~~~~~~~~~
+src\student_manager.h:14:25: note: expanded from macro 'MAX_NAME_LEN'
+   14 | #define MAX_NAME_LEN    50
+      |                         ^~
+src\input_validator.h:23:5: note: 'input_read_line' declared here
+   23 | int input_read_line(char *buffer, int size);
+      |     ^               ~~~~~~~~~~~~~~~~~~~~~~
+1 error generated.
+emcc: error: ''C:/Users/user/emsdk/upstream/bin\clang.exe' -target wasm32-unknown-emscripten -fignore-exceptions -mllvm -combiner-global-alias-analysis=false -mllvm -enable-emscripten-sjlj -mllvm -disable-lsr '--sysroot=C:\Users\user\emsdk\upstream\emscripten\cache\sysroot' -DEMSCRIPTEN -Xclang '-iwithsysroot/include\fakesdl' -Xclang '-iwithsysroot/include\compat' -std=c11 -O2 -Wall -Wextra -c 'src\main.c' -o 'C:\Users\user\AppData\Local\Temp\emscripten_temp_rh14zejx\main.o'' failed (returned 1)

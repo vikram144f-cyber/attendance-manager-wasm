@@ -1,0 +1,139 @@
+﻿cmd.exe : file:///C:/Us
+ers/user/emsdk/upstream
+/emscripten/node_module
+s/acorn/dist/acorn.mjs:
+3731
+At line:1 char:1
++ cmd.exe /c "set PATH=
+%PATH%;%USERPROFILE%\em
+sdk;%USERPROFILE%\emsdk
+\u ...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: (file:///C:/Us   
+ er.../acorn.mjs:37    
+31:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+  var err = new 
+SyntaxError(message);
+            ^
+
+SyntaxError: 
+Unexpected token 
+(4278:122)
+function 
+js_storage_init() { 
+try { 
+FS.mkdir('/data'); } 
+catch (e) {} 
+FS.mount(IDBFS, 
+{autoPersist: true}, 
+'/data'); await new 
+Promise((resolve) => { 
+FS.syncfs(true, 
+function(err) { if 
+(err) { 
+console.error('IDBFS 
+load error:', err); } 
+else { 
+console.log('IDBFS: 
+Persistent data loaded 
+successfully.'); } 
+resolve(); }); }); }
+                       
+                       
+                       
+                       
+                       
+       ^ C:\Users\user\
+AppData\Local\Temp\emsc
+ripten_temp_3seh51dm\in
+dex.js:4278:123
+    at pp$4.raise (file
+:///C:/Users/user/emsdk
+/upstream/emscripten/no
+de_modules/acorn/dist/a
+corn.mjs:3731:13)
+    at pp$9.unexpected 
+(file:///C:/Users/user/
+emsdk/upstream/emscript
+en/node_modules/acorn/d
+ist/acorn.mjs:770:8)
+    at pp$9.semicolon (
+file:///C:/Users/user/e
+msdk/upstream/emscripte
+n/node_modules/acorn/di
+st/acorn.mjs:747:66)
+    at pp$8.parseExpres
+sionStatement (file:///
+C:/Users/user/emsdk/ups
+tream/emscripten/node_m
+odules/acorn/dist/acorn
+.mjs:1317:8)
+    at 
+pp$8.parseStatement (fi
+le:///C:/Users/user/ems
+dk/upstream/emscripten/
+node_modules/acorn/dist
+/acorn.mjs:1023:24)
+    at pp$8.parseBlock 
+(file:///C:/Users/user/
+emsdk/upstream/emscript
+en/node_modules/acorn/d
+ist/acorn.mjs:1333:21)
+    at 
+pp$5.parseFunctionBody 
+(file:///C:/Users/user/
+emsdk/upstream/emscript
+en/node_modules/acorn/d
+ist/acorn.mjs:3546:22)
+    at 
+pp$8.parseFunction (fil
+e:///C:/Users/user/emsd
+k/upstream/emscripten/n
+ode_modules/acorn/dist/
+acorn.mjs:1460:8)
+    at pp$8.parseFuncti
+onStatement (file:///C:
+/Users/user/emsdk/upstr
+eam/emscripten/node_mod
+ules/acorn/dist/acorn.m
+js:1149:15)
+    at 
+pp$8.parseStatement (fi
+le:///C:/Users/user/ems
+dk/upstream/emscripten/
+node_modules/acorn/dist
+/acorn.mjs:956:17) {
+  pos: 149776,
+  loc: Position { 
+line: 4278, column: 
+122 },
+  raisedAt: 149779
+}
+
+Node.js v22.16.0
+emcc: [31m[1merror: 
+[0m[1m'C:/Users/user/e
+msdk/node/22.16.0_64bit
+/bin/node.exe 'C:\Users
+\user\emsdk\upstream\em
+scripten\tools\acorn-op
+timizer.mjs' 'C:\Users\
+user\AppData\Local\Temp
+\emscripten_temp_3seh51
+dm\index.js' JSDCE 
+--minify-whitespace -o 
+'C:\Users\user\AppData\
+Local\Temp\emscripten_t
+emp_3seh51dm\index.jso1
+.js'' failed (returned 
+1)[0m

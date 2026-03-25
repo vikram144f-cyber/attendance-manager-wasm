@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DA1-BMAD | Student Attendance Manager</title>
+    <meta name="description" content="A crash-proof Student Attendance Manager compiled from C to WebAssembly. Manage student records, track attendance, and generate shortage reports — all in your browser.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app-container">
+        <header id="app-header">
+            <h1>DA1-BMAD <span class="subtitle">Student Attendance Manager</span></h1>
+            <div class="status-bar">
+                <span id="status-indicator" class="status-ready">● SYSTEM READY</span>
+            </div>
+        </header>
+
+        <main id="terminal-area">
+            <textarea id="output" readonly rows="24" cols="80" aria-label="Terminal output"></textarea>
+            <div id="input-area">
+                <label for="input" class="sr-only">Command Input</label>
+                <span class="prompt">&gt;</span>
+                <input type="text" id="input" autofocus autocomplete="off" aria-label="Enter command">
+            </div>
+        </main>
+
+        <footer id="app-footer">
+            <span>Powered by WebAssembly &bull; Emscripten &bull; IDBFS</span>
+        </footer>
+    </div>
+
+    <script>
+        // ====================================================================
+        // Emscripten Module Configuration
+        // ====================================================================
+        // This configures the C-to-JS bridge:
+        //   - STDOUT/STDERR -> textarea (output area)
+        //   - Keyboard input -> stdin (via ASYNCIFY)
+        // ====================================================================
+
+        var Module = {
+            inputResolve: null,
+            preRun: [],
+            postRun: [],
+
+            print: function(text) {
+                var output = document.getElementById('output');
+                output.value += text + '\n';
+                output.scrollTop = output.scrollHeight;
+            },
+
+            printErr: function(text) {
+                var output = document.getElementById('output');
+                output.value += '[ERR] ' + text + '\n';
+                output.scrollTop = output.scrollHeight;
+                console.warn('WASM STDERR:', text);
+            },
+
+            canvas: null,
+
+            locateFile: function(path) {
+                return path;
+            }
+        };
+
+        // ====================================================================
+        // Input Handler
+        // ====================================================================
+        // Captures Enter key in the input field and feeds the text
+        // (plus a newline) into the stdin queue for the C program.
+        // ====================================================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var inputEl = document.getElementById('input');
+            var outputEl = document.getElementById('output');
+
+            inputEl.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    var text = inputEl.value;
+
+                    // Echo the input to the terminal output
+                    outputEl.value += '> ' + text + '\n';
+                    outputEl.scrollTop = outputEl.scrollHeight;
+
+                    // Clear the input field
+                    inputEl.value = '';
+
+                    // Resume C execution
+                    if (Module.inputResolve) {
+                        var resolve = Module.inputResolve;
+                        Module.inputResolve = null;
+                        resolve(text);
+                    }
+                }
+            });
+        });
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>
