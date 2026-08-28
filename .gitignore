@@ -1,0 +1,17 @@
+# Local Emscripten/tooling state
+.emscripten
+.emscripten_cache/
+.cache/
+node_modules/
+
+# Local diagnostics and manual backups
+build_*.txt
+index_backup.html
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# The checked-in index.html/index.js/index.wasm are intentional demo artifacts.

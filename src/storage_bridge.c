@@ -22,7 +22,7 @@ void set_storage_ready(void) {
     storage_ready = 1;
 }
 
-EM_JS(void, js_storage_init_async, (), {
+EM_JS(void, js_storage_init_async, (void), {
     try {
         FS.mkdir('/data');
     } catch (e) {}
@@ -35,7 +35,7 @@ EM_JS(void, js_storage_init_async, (), {
     });
 });
 
-EM_JS(void, js_storage_sync_async, (), {
+EM_JS(void, js_storage_sync_async, (void), {
     FS.syncfs(false, function(err) {
         if (err) console.error('IDBFS sync error:', err);
         else console.log('IDBFS: Data synced to IndexedDB.');

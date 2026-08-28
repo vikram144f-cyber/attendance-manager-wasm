@@ -3,96 +3,95 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>DA1-BMAD | Student Attendance Manager</title>
-    <meta name="description" content="A crash-proof Student Attendance Manager compiled from C to WebAssembly. Manage student records, track attendance, and generate shortage reports — all in your browser.">
+    <meta name="theme-color" content="#050807">
+    <title>Attendance Manager | C11 + WebAssembly</title>
+    <meta name="description" content="A C11 student attendance manager running locally in the browser through WebAssembly.">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
     <div id="app-container">
         <header id="app-header">
-            <h1>DA1-BMAD <span class="subtitle">Student Attendance Manager</span></h1>
-            <div class="status-bar">
-                <span id="status-indicator" class="status-ready">● SYSTEM READY</span>
+            <div class="brand">
+                <span class="eyebrow">C11 / EMSCRIPTEN / IDBFS</span>
+                <h1>Attendance Manager</h1>
+                <p class="subtitle">A small native-style application, running in the browser.</p>
+            </div>
+            <div class="status-bar" aria-label="Application status">
+                <span class="status-ready">READY</span>
             </div>
         </header>
 
         <main id="terminal-area">
-            <textarea id="output" readonly rows="24" cols="80" aria-label="Terminal output"></textarea>
-            <div id="input-area">
-                <label for="input" class="sr-only">Command Input</label>
-                <span class="prompt">&gt;</span>
-                <input type="text" id="input" autofocus autocomplete="off" aria-label="Enter command">
+            <div class="terminal-heading">
+                <span><span class="terminal-dot" aria-hidden="true"></span> SESSION CONSOLE</span>
+                <span class="terminal-hint">LOCAL STORAGE ENABLED</span>
+            </div>
+            <div class="terminal-frame">
+                <textarea id="output" readonly rows="24" cols="80" aria-label="Terminal output"></textarea>
+                <div id="input-area">
+                    <label for="input" class="sr-only">Enter a command</label>
+                    <span class="prompt" aria-hidden="true">&gt;_</span>
+                    <input type="text" id="input" autofocus autocomplete="off" spellcheck="false" aria-label="Enter a command" placeholder="Waiting for input...">
+                </div>
             </div>
         </main>
 
         <footer id="app-footer">
-            <span>Powered by WebAssembly &bull; Emscripten &bull; IDBFS</span>
+            <span>Data stays in this browser</span>
+            <span class="footer-divider" aria-hidden="true">·</span>
+            <span>C11 → WebAssembly</span>
         </footer>
     </div>
 
     <script>
-        // ====================================================================
-        // Emscripten Module Configuration
-        // ====================================================================
-        // This configures the C-to-JS bridge:
-        //   - STDOUT/STDERR -> textarea (output area)
-        //   - Keyboard input -> stdin (via ASYNCIFY)
-        // ====================================================================
-
         var Module = {
             inputResolve: null,
             preRun: [],
             postRun: [],
-
             print: function(text) {
                 var output = document.getElementById('output');
-                output.value += text + '\n';
-                output.scrollTop = output.scrollHeight;
+                if (output) {
+                    output.value += text + '\n';
+                    output.scrollTop = output.scrollHeight;
+                }
             },
-
             printErr: function(text) {
                 var output = document.getElementById('output');
-                output.value += '[ERR] ' + text + '\n';
-                output.scrollTop = output.scrollHeight;
+                if (output) {
+                    output.value += '[ERR] ' + text + '\n';
+                    output.scrollTop = output.scrollHeight;
+                }
                 console.warn('WASM STDERR:', text);
             },
-
-            canvas: null,
-
             locateFile: function(path) {
                 return path;
             }
         };
 
-        // ====================================================================
-        // Input Handler
-        // ====================================================================
-        // Captures Enter key in the input field and feeds the text
-        // (plus a newline) into the stdin queue for the C program.
-        // ====================================================================
-
         document.addEventListener('DOMContentLoaded', function() {
             var inputEl = document.getElementById('input');
             var outputEl = document.getElementById('output');
 
-            inputEl.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    var text = inputEl.value;
+            inputEl.addEventListener('keydown', function(event) {
+                if (event.key !== 'Enter') return;
 
-                    // Echo the input to the terminal output
-                    outputEl.value += '> ' + text + '\n';
-                    outputEl.scrollTop = outputEl.scrollHeight;
+                var text = inputEl.value;
+                outputEl.value += '>_ ' + text + '\n';
+                outputEl.scrollTop = outputEl.scrollHeight;
+                inputEl.value = '';
 
-                    // Clear the input field
-                    inputEl.value = '';
-
-                    // Resume C execution
-                    if (Module.inputResolve) {
-                        var resolve = Module.inputResolve;
-                        Module.inputResolve = null;
-                        resolve(text);
-                    }
+                if (Module.inputResolve) {
+                    var resolve = Module.inputResolve;
+                    Module.inputResolve = null;
+                    resolve(text);
                 }
+            });
+
+            document.getElementById('terminal-area').addEventListener('click', function() {
+                inputEl.focus();
             });
         });
     </script>

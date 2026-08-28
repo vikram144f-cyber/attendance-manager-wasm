@@ -5,7 +5,7 @@
  * Uses fgets() exclusively - never scanf().
  *
  * All validation happens here so that logic modules receive
- * clean, type-safe data. This is the "Crash-Proof" guarantee.
+ * clean, bounded data before it reaches the application logic.
  */
 
 #include "input_validator.h"
@@ -36,7 +36,7 @@ EM_JS(void, js_listen_input, (const char* prompt_str), {
     inputEl.focus();
 
     Module.inputResolve = function(text) {
-        inputEl.placeholder = '';
+        inputEl.placeholder = "";
         var p = Module._get_input_buffer_ptr();
         stringToUTF8(text, p, 256);
         Module._set_input_ready();

@@ -1,5 +1,5 @@
 /**
- * DA1-BMAD - Student Attendance Manager
+ * C11 Student Attendance Manager
  * ======================================
  * Entry point for the WebAssembly application.
  *
@@ -25,7 +25,7 @@ static void handle_delete_all(void);
 
 int main(void) {
     printf("========================================\n");
-    printf("  DA1-BMAD: Student Attendance Manager\n");
+    printf("  C11 Student Attendance Manager\n");
     printf("  Compiled to WebAssembly via Emscripten\n");
     printf("========================================\n\n");
 
@@ -54,8 +54,8 @@ int main(void) {
         printf("  3. Search Student by Registration Number\n");
         printf("    ----------\n");
         printf("  4. View Attendance Shortage (< 75%%)\n");
-        printf("  5. View Overall Class Summary\n");
-        printf("  6. Class Statistic\n");
+        printf("  5. View Student Roster\n");
+        printf("  6. View Overall Class Summary\n");
         printf("    ----------\n");
         printf("  7. Delete Student Record\n");
         printf("  8. Delete All Saved Data\n");
